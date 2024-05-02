@@ -21,6 +21,19 @@ export class AuthService {
     }
   }
 
+  async register(body: Prisma.UserCreateInput) {
+    const userIsExist = await this.userService.findBy({ email: body.email })
+    if (userIsExist) throw new HttpException('User already exists', 409)
+
+    const { password, ...user } = await this.userService.create(body)
+    const tokens = this.issueTokens(user.id)
+
+    return {
+      user,
+      ...tokens
+    }
+  }
+
   private async validateUser({ email, password }: Prisma.UserCreateInput) {
     const user = await this.userService.findBy({ email })
     if (!user) throw new HttpException('User not found', 404)
