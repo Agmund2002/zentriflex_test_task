@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { Prisma } from '@prisma/client'
 import { UserService } from 'src/user/user.service'
+import { Response } from 'express'
 import * as bcrypt from 'bcrypt'
 
 @Injectable()
@@ -55,5 +56,28 @@ export class AuthService {
     })
 
     return { accessToken, refreshToken }
+  }
+
+  addRefreshTokenToResponse(res: Response, refreshToken: string) {
+    const expiresIn = new Date()
+    expiresIn.setDate(expiresIn.getDate() + 1)
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      domain: process.env.DOMAIN,
+      expires: expiresIn,
+      secure: true,
+      sameSite: 'lax'
+    })
+  }
+
+  removeRefreshTokenFromResponse(res: Response) {
+    res.cookie('refreshToken', '', {
+      httpOnly: true,
+      domain: process.env.DOMAIN,
+      expires: new Date(0),
+      secure: true,
+      sameSite: 'lax'
+    })
   }
 }

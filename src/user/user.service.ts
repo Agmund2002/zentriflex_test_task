@@ -12,12 +12,10 @@ export class UserService {
   }
 
   async create(body: Prisma.UserCreateInput) {
-    const password = await this.hashPassword(body.password)
-
     return this.prisma.user.create({
       data: {
         ...body,
-        password
+        password: await this.hashPassword(body.password)
       }
     })
   }
