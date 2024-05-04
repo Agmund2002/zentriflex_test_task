@@ -7,6 +7,9 @@ import * as bcrypt from 'bcrypt'
 
 @Injectable()
 export class AuthService {
+  REFRESH_TOKEN_NAME = 'refreshToken'
+  EXPIRE_DAY_REFRESH_TOKEN = 7
+
   constructor(
     private jwt: JwtService,
     private userService: UserService
@@ -49,10 +52,10 @@ export class AuthService {
     const payload = { id }
 
     const accessToken = this.jwt.sign(payload, {
-      expiresIn: '1h'
+      expiresIn: '15m'
     })
     const refreshToken = this.jwt.sign(payload, {
-      expiresIn: '7d'
+      expiresIn: `${this.EXPIRE_DAY_REFRESH_TOKEN}d`
     })
 
     return { accessToken, refreshToken }
@@ -60,9 +63,9 @@ export class AuthService {
 
   addRefreshTokenToResponse(res: Response, refreshToken: string) {
     const expiresIn = new Date()
-    expiresIn.setDate(expiresIn.getDate() + 1)
+    expiresIn.setDate(expiresIn.getDate() + this.EXPIRE_DAY_REFRESH_TOKEN)
 
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie(this.REFRESH_TOKEN_NAME, refreshToken, {
       httpOnly: true,
       domain: process.env.DOMAIN,
       expires: expiresIn,
@@ -72,7 +75,7 @@ export class AuthService {
   }
 
   removeRefreshTokenFromResponse(res: Response) {
-    res.cookie('refreshToken', '', {
+    res.cookie(this.REFRESH_TOKEN_NAME, '', {
       httpOnly: true,
       domain: process.env.DOMAIN,
       expires: new Date(0),
