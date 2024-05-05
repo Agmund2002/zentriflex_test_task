@@ -38,6 +38,21 @@ export class AuthService {
     }
   }
 
+  async getNewTokens(refreshToken: string) {
+    const payload = await this.jwt.verifyAsync(refreshToken)
+    if (!payload) throw new HttpException('Invalid refresh token', 401)
+
+    const { password, ...user } = await this.userService.findBy({
+      id: payload.id
+    })
+    const tokens = this.issueTokens(user.id)
+
+    return {
+      user,
+      ...tokens
+    }
+  }
+
   private async validateUser({ email, password }: Prisma.UserCreateInput) {
     const user = await this.userService.findBy({ email })
     if (!user) throw new HttpException('User not found', 404)

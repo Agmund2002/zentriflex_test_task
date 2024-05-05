@@ -1,7 +1,15 @@
-import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpException,
+  Post,
+  Req,
+  Res
+} from '@nestjs/common'
 import { AuthDto } from './dto/auth.dto'
 import { AuthService } from './auth.service'
-import { Response } from 'express'
+import { Request, Response } from 'express'
 import { Auth } from 'src/decorators/auth.decorator'
 
 @Controller('auth')
@@ -26,6 +34,27 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ) {
     const { refreshToken, ...response } = await this.authService.register(body)
+    this.authService.addRefreshTokenToResponse(res, refreshToken)
+
+    return response
+  }
+
+  @Post('refresh')
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const refreshTokenFromCookies =
+      req.cookies[this.authService.REFRESH_TOKEN_NAME]
+
+    if (!refreshTokenFromCookies) {
+      this.authService.removeRefreshTokenFromResponse(res)
+      throw new HttpException('Refresh token not passed', 401)
+    }
+
+    const { refreshToken, ...response } = await this.authService.getNewTokens(
+      refreshTokenFromCookies
+    )
     this.authService.addRefreshTokenToResponse(res, refreshToken)
 
     return response
