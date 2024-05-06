@@ -35,7 +35,16 @@ export class UsersService {
     return updatedUser
   }
 
-  delete() {}
+  async delete(id: number) {
+    const deletedUser = await this.prisma.user.delete({
+      where: {
+        id
+      }
+    })
+    if (!deletedUser) throw new HttpException('User not found', 404)
+
+    return deletedUser
+  }
 
   private async checkFieldsToUpdate(
     user: Prisma.UserMinAggregateOutputType,
