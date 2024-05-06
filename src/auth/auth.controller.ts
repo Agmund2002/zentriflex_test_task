@@ -10,7 +10,7 @@ import {
 import { AuthDto } from './dto/auth.dto'
 import { AuthService } from './auth.service'
 import { Request, Response } from 'express'
-import { Auth } from 'src/decorators/auth.decorator'
+import { ProtectedRoute } from 'src/decorators/auth.decorator'
 
 @Controller('auth')
 export class AuthController {
@@ -40,6 +40,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @HttpCode(200)
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response
@@ -61,7 +62,7 @@ export class AuthController {
   }
 
   @Post('logout')
-  @Auth()
+  @ProtectedRoute()
   @HttpCode(204)
   logout(@Res({ passthrough: true }) res: Response) {
     this.authService.removeRefreshTokenFromResponse(res)
