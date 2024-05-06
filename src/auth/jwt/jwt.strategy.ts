@@ -1,11 +1,11 @@
 import { HttpException, Injectable } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
-import { UserService } from 'src/user/user.service'
+import { UsersService } from 'src/users/users.service'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private userService: UserService) {
+  constructor(private usersService: UsersService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate({ id }: { id: number }) {
-    const user = await this.userService.findBy({ id })
+    const user = await this.usersService.findBy({ id })
     if (!user) throw new HttpException('User not found', 404)
 
     return user

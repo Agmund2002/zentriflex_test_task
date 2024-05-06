@@ -4,7 +4,7 @@ import { PrismaService } from 'src/prisma.service'
 import * as bcrypt from 'bcrypt'
 
 @Injectable()
-export class UserService {
+export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   findBy(where: Prisma.UserWhereUniqueInput) {
