@@ -9,20 +9,20 @@ import {
 } from 'class-validator'
 
 export class RegisterDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'example@mail.com' })
   @IsString()
   @IsEmail()
   @IsNotEmpty()
   @MaxLength(50)
   email: string
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ example: 'John Doe', required: false })
   @IsString()
   @IsOptional()
   @MaxLength(50)
   name?: string
 
-  @ApiProperty()
+  @ApiProperty({ example: 'qwe123qwe' })
   @IsString()
   @MinLength(6, {
     message: 'Password must be at least 6 characters long'
