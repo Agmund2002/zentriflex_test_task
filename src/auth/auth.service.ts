@@ -1,4 +1,9 @@
-import { HttpException, Injectable } from '@nestjs/common'
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException
+} from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { Prisma } from '@prisma/client'
 import { UsersService } from 'src/users/users.service'
@@ -27,7 +32,7 @@ export class AuthService {
 
   async register(body: Prisma.UserCreateInput) {
     const userIsExist = await this.usersService.findBy({ email: body.email })
-    if (userIsExist) throw new HttpException('User already exists', 409)
+    if (userIsExist) throw new ConflictException('User already exists')
 
     const { password, ...user } = await this.usersService.create(body)
     const tokens = this.issueTokens(user.id)
@@ -40,11 +45,13 @@ export class AuthService {
 
   async getNewTokens(refreshToken: string) {
     const payload = await this.jwt.verifyAsync(refreshToken)
-    if (!payload) throw new HttpException('Invalid refresh token', 401)
+    if (!payload) throw new UnauthorizedException('Invalid refresh token')
 
     const { password, ...user } = await this.usersService.findBy({
       id: payload.id
     })
+    if (!user) throw new NotFoundException('User not found')
+
     const tokens = this.issueTokens(user.id)
 
     return {
@@ -55,10 +62,10 @@ export class AuthService {
 
   private async validateUser({ email, password }: Prisma.UserCreateInput) {
     const user = await this.usersService.findBy({ email })
-    if (!user) throw new HttpException('User not found', 404)
+    if (!user) throw new NotFoundException('User not found')
 
     const passwordIsValid = await bcrypt.compare(password, user.password)
-    if (!passwordIsValid) throw new HttpException('Invalid password', 401)
+    if (!passwordIsValid) throw new UnauthorizedException('Invalid password')
 
     return user
   }

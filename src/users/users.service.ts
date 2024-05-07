@@ -1,4 +1,8 @@
-import { HttpException, Injectable } from '@nestjs/common'
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException
+} from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from 'src/prisma.service'
 import * as bcrypt from 'bcrypt'
@@ -30,7 +34,7 @@ export class UsersService {
       },
       data: await this.checkFieldsToUpdate(user, body)
     })
-    if (!updatedUser) throw new HttpException('User not found', 404)
+    if (!updatedUser) throw new NotFoundException('User not found')
 
     return updatedUser
   }
@@ -41,7 +45,7 @@ export class UsersService {
         id
       }
     })
-    if (!deletedUser) throw new HttpException('User not found', 404)
+    if (!deletedUser) throw new NotFoundException('User not found')
 
     return deletedUser
   }
@@ -55,7 +59,7 @@ export class UsersService {
 
     if (email && email !== userEmail) {
       const findUser = await this.findBy({ email: email as string })
-      if (findUser) throw new HttpException('Email already exist', 409)
+      if (findUser) throw new ConflictException('Email already exist')
     }
 
     let hashedPassword = userPassword
